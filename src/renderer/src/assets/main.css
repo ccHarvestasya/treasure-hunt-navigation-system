@@ -4,7 +4,6 @@
 .leaflet-container {
   width: 100%;
   padding-top: 100%;
-  background: red;
 }
 
 /* 通常カーソル */
@@ -12,7 +11,32 @@
   cursor: auto;
 }
 
-.container {
-  min-width: 300px;
-  max-width: 600px;
+.top-wrap {
+  max-width: 980px;
+  background-color: #2d2faa;
+}
+
+.wrap {
+  display: flex;
+  max-width: 980px;
+}
+
+.map-container {
+  flex: 1;
+  background-color: #aa2d2d;
+}
+
+.control-container {
+  width: 400px;
+  background-color: #46a5ac;
+}
+
+/* スマホ 767px以下 */
+@media only screen and (max-width: 767px) {
+  .wrap {
+    display: block;
+  }
+  .control-container {
+    width: 100%;
+  }
 }

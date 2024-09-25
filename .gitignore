@@ -4,4 +4,4 @@ out
 .DS_Store
 *.log*
 
-src/renderer/src/assets/**/*.jpg
+src/renderer/src/assets/map/**/*.jpg
