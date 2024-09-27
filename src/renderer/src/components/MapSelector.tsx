@@ -68,7 +68,13 @@ export const MapSelector = (props: {
       mapTabsJsx.push(<Tab key={m} label={m} {...mapTabProps(mapNameArray.indexOf(m))} />)
     }
     const mapNameTabPanelsJsx = (
-      <Tabs variant="scrollable" scrollButtons value={selecMapTabNo} onChange={handleChangeMap}>
+      <Tabs
+        variant="scrollable"
+        scrollButtons="auto"
+        allowScrollButtonsMobile
+        value={selecMapTabNo}
+        onChange={handleChangeMap}
+      >
         {mapTabsJsx}
       </Tabs>
     )
@@ -83,7 +89,8 @@ export const MapSelector = (props: {
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs
             variant="scrollable"
-            scrollButtons
+            scrollButtons="auto"
+            allowScrollButtonsMobile
             value={selecPatchTabNo}
             onChange={handleChangePatch}
           >

@@ -7,6 +7,18 @@ import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
 import markerIconShadow from 'leaflet/dist/images/marker-shadow.png'
 import { MapSelector } from './components/MapSelector'
+import aetheryte from './assets/marker/aetheryte.png'
+import markerA from './assets/marker/marker-a.png'
+import markerB from './assets/marker/marker-b.png'
+import markerC from './assets/marker/marker-c.png'
+import markerD from './assets/marker/marker-d.png'
+import markerE from './assets/marker/marker-e.png'
+import markerF from './assets/marker/marker-f.png'
+import markerG from './assets/marker/marker-g.png'
+import markerH from './assets/marker/marker-h.png'
+import markerI from './assets/marker/marker-i.png'
+import markerJ from './assets/marker/marker-j.png'
+import dataJson from './assets/data.json'
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -51,11 +63,15 @@ function App(): JSX.Element {
   const [eorzeaLayer, setEorzeaLayer] = useState<L.TileLayer>()
   const [selectPatchNo, setSelectPathNo] = useState(3)
   const [selectMapNo, setSelectMapNo] = useState(1)
+  const [townMarkers, setTownMarkers] = useState<L.Marker[]>([])
+  const [treasureBoxMarkers, setTreasureBoxMarkers] = useState<L.Marker[]>([])
 
+  /**
+   * 初期描画時
+   */
   useEffect(() => {
     console.debug('useEffect[]')
     if (L.DomUtil.get('map')?.innerHTML !== '') return
-    // if (eorzeaMap !== undefined) return
 
     const map = L.map('map', {
       crs: L.CRS.Simple,
@@ -67,23 +83,31 @@ function App(): JSX.Element {
     setEorzeaMap(map)
 
     // 地図描画
-    drowMap()
+    drawMap()
 
     // マーカー
-    L.marker(L.latLng(-128, 128), {
-      draggable: true
-    }).addTo(map)
+    // L.marker(L.latLng(-128, 128), {
+    //   draggable: true
+    // }).addTo(map)
   }, [])
 
+  /**
+   * パッチ、マップ変更時
+   */
   useEffect(() => {
     console.debug('useEffect[selectPatchNo, selectMapNo]')
-    drowMap()
+    // 地図描画
+    drawMap()
+    // 都市マーカー描画
+    drawTownMarker()
+    // 宝箱マーカー描画
+    drawTreasureBoxMarker()
   }, [selectPatchNo, selectMapNo])
 
   /**
    * 地図描画
    */
-  const drowMap = (): void => {
+  const drawMap = (): void => {
     console.debug('drowMap')
     let eoLayer = eorzeaLayer
     if (eorzeaMap === undefined) {
@@ -113,12 +137,101 @@ function App(): JSX.Element {
     setEorzeaLayer(eoLayer)
   }
 
+  const drawTownMarker = (): void => {
+    if (eorzeaMap === undefined) {
+      console.debug('マップインスタンスなし')
+      return
+    }
+
+    for (const townMarker of townMarkers) {
+      townMarker.remove()
+    }
+
+    const jsons = dataJson.filter((val) => {
+      if (val.patch === selectPatchNo && val.mapNo === selectMapNo && val.coordClass === 'E')
+        return true
+      return false
+    })
+
+    const newMarkers: L.Marker[] = []
+    const aetheryteIcon = L.icon({
+      iconUrl: aetheryte,
+      iconSize: [30, 30],
+      iconAnchor: [15, 15]
+    })
+    for (const j of jsons) {
+      const lat = convMapPos(j.mapSize, j.coordY) * -1
+      const lng = convMapPos(j.mapSize, j.coordX)
+      const marker = L.marker(L.latLng(lat, lng), {
+        icon: aetheryteIcon
+      })
+      marker.bindTooltip(j.coordNameJa)
+      marker.addTo(eorzeaMap)
+      newMarkers.push(marker)
+    }
+    setTownMarkers(newMarkers)
+  }
+
+  const drawTreasureBoxMarker = (): void => {
+    if (eorzeaMap === undefined) {
+      console.debug('マップインスタンスなし')
+      return
+    }
+
+    for (const treasureBoxMarker of treasureBoxMarkers) {
+      treasureBoxMarker.remove()
+    }
+
+    const tbIconSize: L.PointExpression = [25, 35]
+    const tbIconAnchor: L.PointExpression = [13, 35]
+    const tbMarkers = {
+      A: L.icon({ iconUrl: markerA, iconSize: tbIconSize, iconAnchor: tbIconAnchor }),
+      B: L.icon({ iconUrl: markerB, iconSize: tbIconSize, iconAnchor: tbIconAnchor }),
+      C: L.icon({ iconUrl: markerC, iconSize: tbIconSize, iconAnchor: tbIconAnchor }),
+      D: L.icon({ iconUrl: markerD, iconSize: tbIconSize, iconAnchor: tbIconAnchor }),
+      E: L.icon({ iconUrl: markerE, iconSize: tbIconSize, iconAnchor: tbIconAnchor }),
+      F: L.icon({ iconUrl: markerF, iconSize: tbIconSize, iconAnchor: tbIconAnchor }),
+      G: L.icon({ iconUrl: markerG, iconSize: tbIconSize, iconAnchor: tbIconAnchor }),
+      H: L.icon({ iconUrl: markerH, iconSize: tbIconSize, iconAnchor: tbIconAnchor }),
+      I: L.icon({ iconUrl: markerI, iconSize: tbIconSize, iconAnchor: tbIconAnchor }),
+      J: L.icon({ iconUrl: markerJ, iconSize: tbIconSize, iconAnchor: tbIconAnchor })
+    }
+
+    const jsons = dataJson.filter((val) => {
+      if (val.patch === selectPatchNo && val.mapNo === selectMapNo && val.coordClass === 'P')
+        return true
+      return false
+    })
+
+    const newMarkers: L.Marker[] = []
+    for (const j of jsons) {
+      const lat = convMapPos(j.mapSize, j.coordY) * -1
+      const lng = convMapPos(j.mapSize, j.coordX)
+      const marker = L.marker(L.latLng(lat, lng), {
+        icon: tbMarkers[j.coordNameJa]
+      })
+      marker.bindTooltip(`${lng}, ${lat * -1}`)
+      marker.addTo(eorzeaMap)
+      newMarkers.push(marker)
+    }
+    setTreasureBoxMarkers(newMarkers)
+  }
+
+  const convMapPos = (mapSize: number, coord: number): number => {
+    return 256 * ((coord - 10) / mapSize)
+  }
+
   const [value, setValue] = useState(1)
 
   const handleChange = (event: React.SyntheticEvent, newValue: number): void => {
     setValue(newValue)
   }
 
+  /**
+   * MapSelectorからの通知を受ける
+   * @param patchNo パッチNo
+   * @param mapNo マップNo
+   */
   const handleChangeMap = (patchNo: number, mapNo: number): void => {
     setSelectPathNo(patchNo)
     setSelectMapNo(mapNo)
@@ -127,7 +240,7 @@ function App(): JSX.Element {
 
   return (
     <>
-      <div className="top-wrap">sss </div>
+      <div className="top-wrap"></div>
       <div className="wrap">
         <div className="map-container">
           <MapSelector onSelectMap={handleChangeMap} />
