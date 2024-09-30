@@ -29,19 +29,28 @@
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "electron-vite build && electron-builder --mac",
-    "build:linux": "electron-vite build && electron-builder --linux"
+    "build:linux": "electron-vite build && electron-builder --linux",
+    "i18next-extract": "babel --config-file ./i18n/babel.config.json './src/**/*.{js,jsx,ts,tsx}'"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^3.0.0",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
+    "@mui/icons-material": "^6.1.1",
     "@mui/material": "^6.1.1",
     "electron-updater": "^6.1.7",
+    "i18next": "^23.15.1",
+    "i18next-browser-languagedetector": "^8.0.0",
     "leaflet": "^1.9.4",
-    "react-leaflet": "^4.2.1"
+    "react-i18next": "^15.0.2",
+    "react-leaflet": "^4.2.1",
+    "react-window": "^1.8.10"
   },
   "devDependencies": {
+    "@babel/cli": "^7.25.6",
+    "@babel/preset-react": "^7.24.7",
+    "@babel/preset-typescript": "^7.24.7",
     "@electron-toolkit/eslint-config-prettier": "^2.0.0",
     "@electron-toolkit/eslint-config-ts": "^2.0.0",
     "@electron-toolkit/tsconfig": "^1.0.1",
@@ -49,7 +58,9 @@
     "@types/node": "^20.14.8",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "@types/react-window": "^1",
     "@vitejs/plugin-react": "^4.3.1",
+    "babel-plugin-i18next-extract": "^0.10.0",
     "electron": "^31.0.2",
     "electron-builder": "^24.13.3",
     "electron-vite": "^2.3.0",

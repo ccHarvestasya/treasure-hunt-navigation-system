@@ -1,8 +1,6 @@
-import { Box, Tab, Tabs } from '@mui/material'
-import L, { LatLng } from 'leaflet'
+import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { useEffect, useLayoutEffect, useState } from 'react'
-import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
+import { LegacyRef, MutableRefObject, useEffect, useRef, useState } from 'react'
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
 import markerIconShadow from 'leaflet/dist/images/marker-shadow.png'
@@ -19,35 +17,10 @@ import markerH from './assets/marker/marker-h.png'
 import markerI from './assets/marker/marker-i.png'
 import markerJ from './assets/marker/marker-j.png'
 import dataJson from './assets/data.json'
-
-interface TabPanelProps {
-  children?: React.ReactNode
-  index: number
-  value: number
-}
-
-function CustomTabPanel(props: TabPanelProps): JSX.Element {
-  const { children, value, index, ...other } = props
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  )
-}
-
-function a11yProps(index: number) {
-  return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`
-  }
-}
+import { ControlPanel } from './components/ControlPanel'
+import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material'
+import { useTranslation } from 'react-i18next'
+import i18n from './i18n/configs'
 
 const DefaultIcon = L.icon({
   iconUrl: markerIcon,
@@ -59,10 +32,17 @@ const DefaultIcon = L.icon({
 L.Marker.prototype.options.icon = DefaultIcon
 
 function App(): JSX.Element {
+  const { t } = useTranslation()
+  const [lang, setLang] = useState('ja')
+
+  const wrapElm = useRef<HTMLDivElement>(null)
+  const mapContainerElm = useRef<HTMLDivElement>(null)
+
   const [eorzeaMap, setEorzeaMap] = useState<L.Map>()
   const [eorzeaLayer, setEorzeaLayer] = useState<L.TileLayer>()
   const [selectPatchNo, setSelectPathNo] = useState(3)
   const [selectMapNo, setSelectMapNo] = useState(1)
+  const [selectCoordNo, setSelectCoordNo] = useState(0)
   const [townMarkers, setTownMarkers] = useState<L.Marker[]>([])
   const [treasureBoxMarkers, setTreasureBoxMarkers] = useState<L.Marker[]>([])
 
@@ -84,11 +64,6 @@ function App(): JSX.Element {
 
     // 地図描画
     drawMap()
-
-    // マーカー
-    // L.marker(L.latLng(-128, 128), {
-    //   draggable: true
-    // }).addTo(map)
   }, [])
 
   /**
@@ -103,6 +78,20 @@ function App(): JSX.Element {
     // 宝箱マーカー描画
     drawTreasureBoxMarker()
   }, [selectPatchNo, selectMapNo])
+
+  useEffect(() => {
+    if (wrapElm.current) {
+      console.debug(wrapElm.current)
+      console.debug(JSON.stringify(wrapElm.current.getBoundingClientRect()))
+    }
+  }, [wrapElm])
+
+  /** 言語選択 */
+  const handleChangeLang = (event: SelectChangeEvent): void => {
+    const language = event.target.value as string
+    setLang(language)
+    i18n.changeLanguage(language)
+  }
 
   /**
    * 地図描画
@@ -211,20 +200,24 @@ function App(): JSX.Element {
         icon: tbMarkers[j.coordNameJa]
       })
       marker.bindTooltip(`${lng}, ${lat * -1}`)
+      marker.on('click', () => {
+        console.debug(`マーカークリック: ${j.mapNameJa}(${j.coordNameJa})`)
+        setSelectCoordNo(j.coordNo)
+      })
       marker.addTo(eorzeaMap)
       newMarkers.push(marker)
     }
     setTreasureBoxMarkers(newMarkers)
   }
 
+  /**
+   * エオルゼア座標変換
+   * @param mapSize マップサイズ
+   * @param coord 座標
+   * @returns エオルゼア座標
+   */
   const convMapPos = (mapSize: number, coord: number): number => {
     return 256 * ((coord - 10) / mapSize)
-  }
-
-  const [value, setValue] = useState(1)
-
-  const handleChange = (event: React.SyntheticEvent, newValue: number): void => {
-    setValue(newValue)
   }
 
   /**
@@ -240,34 +233,38 @@ function App(): JSX.Element {
 
   return (
     <>
-      <div className="top-wrap"></div>
-      <div className="wrap">
+      <div className="wrap" ref={wrapElm}>
         <div className="map-container">
+          <FormControl sx={{ m: 1, mb: 0, minWidth: 120 }} size="small">
+            <InputLabel id="lang-select-label">{t('Language')}</InputLabel>
+            <Select
+              labelId="lang-select-label"
+              id="lang-select"
+              value={lang}
+              label="Language"
+              onChange={handleChangeLang}
+            >
+              <MenuItem value={'ja'}>日本語</MenuItem>
+              <MenuItem value={'na'}>English(US)</MenuItem>
+              <MenuItem value={'eu'}>English(UK)</MenuItem>
+              <MenuItem value={'fr'}>Français</MenuItem>
+              <MenuItem value={'de'}>Deutsch</MenuItem>
+              <MenuItem value={'cn'}>中文</MenuItem>
+              <MenuItem value={'kr'}>한국어</MenuItem>
+            </Select>
+          </FormControl>
           <MapSelector onSelectMap={handleChangeMap} />
           <div id="map"></div>
         </div>
         <div className="control-container">
-          <div className="control-container-inner">side</div>
+          <div className="control-container-inner">
+            <ControlPanel
+              selectPatchNo={selectPatchNo}
+              selectMapNo={selectMapNo}
+              selectPointNo={selectCoordNo}
+            />
+          </div>
         </div>
-
-        {/* <Box sx={{ width: '100%' }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
-            <Tab label="Item One" {...a11yProps(0)} />
-            <Tab label="Item Two" {...a11yProps(1)} />
-            <Tab label="Item Three" {...a11yProps(2)} />
-          </Tabs>
-        </Box>
-        <CustomTabPanel value={value} index={0}>
-          Item One
-        </CustomTabPanel>
-        <CustomTabPanel value={value} index={1}>
-          Item Two
-        </CustomTabPanel>
-        <CustomTabPanel value={value} index={2}>
-          Item Three
-        </CustomTabPanel>
-      </Box> */}
       </div>
     </>
   )

@@ -11,24 +11,31 @@
   cursor: auto;
 }
 
+.wrap {
+  display: flex;
+  flex-direction: row;
+  max-width: 980px;
+  height: 100vh;
+  background-color: #2a2ca0;
+}
+
 .top-wrap {
   max-width: 980px;
   background-color: #2d2faa;
 }
 
-.wrap {
-  display: flex;
-  max-width: 980px;
-}
-
 .map-container {
-  flex: 1;
-  background-color: #aa2d2d;
+  min-width: 200px;
+  max-width: 586px;
+  /* background-color: #aa2d2d; */
+  background-color: #363636;
 }
 
 .control-container {
-  width: 400px;
-  background-color: #46a5ac;
+  width: 394px;
+  height: 100%;
+  background-color: #363636;
+  /* border: 1px solid #ffffff; */
 }
 
 /* タブスクロールボタン */
@@ -36,12 +43,13 @@
   opacity: 0.3;
 }
 
-/* スマホ 767px以下 */
-@media only screen and (max-width: 767px) {
+/* スマホ 480px以下 */
+@media screen and (max-width: 480px) {
   .wrap {
     display: block;
   }
+
   .control-container {
-    width: 100%;
+    min-width: 100%;
   }
 }
